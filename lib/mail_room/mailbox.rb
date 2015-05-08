@@ -12,7 +12,11 @@ module MailRoom
     :log_path, # for logger
     :delivery_url, # for postback
     :delivery_token, # for postback
-    :location # for letter_opener
+    :location, # for letter_opener
+    :auth_method, # :login, :gmail_xoauth
+    :client_id, # for gmail_xoauth
+    :client_secret, # for gmail_xoauth
+    :refresh_token # for gmail_xoauth
   ]
 
   # Holds configuration for each of the email accounts we wish to monitor
@@ -24,7 +28,8 @@ module MailRoom
       :delivery_method => 'postback',
       :host => 'imap.gmail.com',
       :port => 993,
-      :ssl => true
+      :ssl => true,
+      :auth_method => 'login'
     }
 
     # Store the configuration and require the appropriate delivery method
@@ -33,6 +38,7 @@ module MailRoom
       super(*DEFAULTS.merge(attributes).values_at(*members))
 
       require_relative("./delivery/#{(delivery_method)}")
+      require_relative("./authentication/#{(auth_method)}")
     end
 
     # move to a mailbox deliverer class?
@@ -48,11 +54,24 @@ module MailRoom
         Delivery::Postback
       end
     end
+    
+    def auth_klass
+      case auth_method
+      when "gmail_xoauth"
+        Authentication::GmailXOAuth
+      else
+        Authentication::Login
+      end
+    end
 
     # deliver the imap email message
     # @param message [Net::IMAP::FetchData]
     def deliver(message)
       delivery_klass.new(self).deliver(message.attr['RFC822'])
+    end
+    
+    def authenticate(imap)
+      auth_klass.new(self).authenticate(imap)
     end
   end
 end

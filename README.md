@@ -94,6 +94,33 @@ Configured with `:delivery_method: letter_opener`.
 
 Uses Ryan Bates' excellent [letter_opener](https://github.com/ryanb/letter_opener) gem.
 
+## Gmail XOAUTH2 ##
+
+If you are using Gmail and do not want to leave the password to your mailbox in a configuration file, `mail_room` can use OAuth to authenticate. To do so, you need to get a client ID/secret from Google, and generate a refresh token for the Gmail account you want to authenticate with. This also requires the `gmail_xoauth` and `oauth2` gems to be installed.
+
+1. Go to the [Google APIs console](https://code.google.com/apis/console/), select "APIs & auth > Credentials", and click Create new Client ID.
+2. Choose "Installed Application", and then "Other". If you are requested to set up a Consent screen, enter an email address and a product name, and continue.
+3. Once you have a Client ID and Client secret, download the [oauth2.py tool](http://code.google.com/p/google-mail-oauth2-tools/wiki/OAuth2DotPyRunThrough).
+4. `python oauth2.py --generate_oauth2_token --client_id=CLIENT_ID --client_secret=CLIENT_SECRET`
+   
+   Make sure to replace CLIENT_ID and CLIENT\_SECRET with the appropriate values.
+5. Among the output will be a value labeled "refresh token". Use this and the client ID and secret to create a configuration file for `mail_drop`:
+
+```yaml
+---
+:mailboxes:
+  -
+    :email: "user1@gmail.com"
+    :auth_method: gmail_xoauth
+    :refresh_token: "REFRESH_TOKEN"
+    :client_id: "CLIENT_ID"
+    :client_secret: "CLIENT_SECRET"
+    :name: "inbox"
+    :delivery_method: postback
+    :delivery_url: "http://localhost:3000/inbox"
+    :delivery_token: "abcdefg"
+```
+
 ## Receiving `postback` in Rails ##
 
 If you have a controller that you're sending to, with forgery protection

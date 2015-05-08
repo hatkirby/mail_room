@@ -79,7 +79,7 @@ module MailRoom
 
     # send the imap login command to google
     def log_in
-      imap.login(@mailbox.email, @mailbox.password)
+      @mailbox.authenticate(imap)
       @logged_in = true
     end
 

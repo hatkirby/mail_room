@@ -37,13 +37,13 @@ describe MailRoom::MailboxWatcher do
   describe '#setup' do
     it 'logs in and sets the mailbox to watch' do
       imap = stub(:login => true, :select => true)
-      mailbox = stub(:email => 'user1@gmail.com', :password => 'password', :name => 'inbox')
+      mailbox = stub(:email => 'user1@gmail.com', :password => 'password', :name => 'inbox', :authenticate => true)
       watcher = MailRoom::MailboxWatcher.new(mailbox)
       watcher.stubs(:imap).returns(imap)
 
       watcher.setup
 
-      imap.should have_received(:login).with('user1@gmail.com', 'password')
+      mailbox.should have_received(:authenticate).with(imap)
       watcher.logged_in?.should eq(true)
       imap.should have_received(:select).with('inbox')
     end

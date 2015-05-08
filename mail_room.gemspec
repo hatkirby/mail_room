@@ -27,4 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "faraday"
   gem.add_development_dependency "mail"
   gem.add_development_dependency "letter_opener"
+  
+  # for testing authentication methods
+  gem.add_development_dependency "gmail_xoauth"
 end
