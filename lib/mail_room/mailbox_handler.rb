@@ -18,6 +18,7 @@ module MailRoom
         # puts msg.attr['RFC822']
 
         # loop over delivery methods and deliver each
+        puts "Processing message for #{@mailbox.email}" if @mailbox.debug
         @mailbox.deliver(msg)
       end
     end

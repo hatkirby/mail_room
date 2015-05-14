@@ -16,7 +16,8 @@ module MailRoom
     :auth_method, # :login, :gmail_xoauth
     :client_id, # for gmail_xoauth
     :client_secret, # for gmail_xoauth
-    :refresh_token # for gmail_xoauth
+    :refresh_token, # for gmail_xoauth
+    :debug
   ]
 
   # Holds configuration for each of the email accounts we wish to monitor
@@ -29,7 +30,8 @@ module MailRoom
       :host => 'imap.gmail.com',
       :port => 993,
       :ssl => true,
-      :auth_method => 'login'
+      :auth_method => 'login',
+      :debug => false
     }
 
     # Store the configuration and require the appropriate delivery method

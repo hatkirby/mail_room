@@ -78,20 +78,31 @@ module MailRoom
     end
 
     # send the imap login command to google
-    def log_in
-      @mailbox.authenticate(imap)
-      @logged_in = true
+    def log_in      
+      puts "Logging in to mailbox #{@mailbox.email}" if @mailbox.debug
+      
+      if @mailbox.authenticate(imap)
+        @logged_in = true
+        
+        puts "Logged in to mailbox #{@mailbox.email}" if @mailbox.debug
+      else
+        puts "Failed to log in to mailbox #{@mailbox.email}" if @mailbox.debug
+      end
     end
 
     # select the mailbox name we want to use
     def set_mailbox
-      imap.select(@mailbox.name) if logged_in?
+      if logged_in?
+        imap.select(@mailbox.name)
+        puts "Selected mailbox #{@mailbox.name} for #{@mailbox.email}" if @mailbox.debug
+      end
     end
 
     # maintain an imap idle connection
     def idle
       return unless ready_to_idle?
 
+      puts "Idling for mailbox #{@mailbox.email}" if @mailbox.debug
       @idling = true
 
       imap.idle(&idle_handler)
@@ -103,6 +114,7 @@ module MailRoom
     def stop_idling
       return unless idling?
 
+      puts "Stopped idling for mailbox #{@mailbox.email}" if @mailbox.debug
       imap.idle_done
       idling_thread.join
     end
@@ -123,6 +135,7 @@ module MailRoom
             process_mailbox
           rescue Net::IMAP::Error, EOFError => e
             # we've been disconnected, so re-setup
+            puts "Disconnected for mailbox #{@mailbox.email}, reconnecting" if @mailbox.debug
             setup
           end
         end
