@@ -79,14 +79,14 @@ module MailRoom
 
     # send the imap login command to google
     def log_in      
-      puts "Logging in to mailbox #{@mailbox.email}" if @mailbox.debug
+      @mailbox.logger.debug "Logging in to mailbox #{@mailbox.email}"
       
       if @mailbox.authenticate(imap)
         @logged_in = true
         
-        puts "Logged in to mailbox #{@mailbox.email}" if @mailbox.debug
+        @mailbox.logger.debug "Logged in to mailbox #{@mailbox.email}"
       else
-        puts "Failed to log in to mailbox #{@mailbox.email}" if @mailbox.debug
+        @mailbox.logger.debug "Failed to log in to mailbox #{@mailbox.email}"
       end
     end
 
@@ -94,7 +94,7 @@ module MailRoom
     def set_mailbox
       if logged_in?
         imap.select(@mailbox.name)
-        puts "Selected mailbox #{@mailbox.name} for #{@mailbox.email}" if @mailbox.debug
+        @mailbox.logger.debug "Selected mailbox #{@mailbox.name} for #{@mailbox.email}"
       end
     end
 
@@ -102,7 +102,7 @@ module MailRoom
     def idle
       return unless ready_to_idle?
 
-      puts "Idling for mailbox #{@mailbox.email}" if @mailbox.debug
+      @mailbox.logger.debug "Idling for mailbox #{@mailbox.email}"
       @idling = true
 
       imap.idle(&idle_handler)
@@ -114,7 +114,7 @@ module MailRoom
     def stop_idling
       return unless idling?
 
-      puts "Stopped idling for mailbox #{@mailbox.email}" if @mailbox.debug
+      @mailbox.logger.debug "Stopped idling for mailbox #{@mailbox.email}"
       imap.idle_done
       idling_thread.join
     end
@@ -135,8 +135,11 @@ module MailRoom
             process_mailbox
           rescue Net::IMAP::Error, EOFError => e
             # we've been disconnected, so re-setup
-            puts "Disconnected for mailbox #{@mailbox.email}, reconnecting" if @mailbox.debug
+            @mailbox.logger.debug "Disconnected for mailbox #{@mailbox.email}, reconnecting"
             setup
+          rescue Exception => e
+            @mailbox.logger.debug "#{@mailbox.email} exception: " + e.to_s
+            raise e
           end
         end
       end

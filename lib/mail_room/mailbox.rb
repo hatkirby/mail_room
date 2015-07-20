@@ -1,3 +1,5 @@
+require 'logger'
+
 module MailRoom
   # Mailbox Configuration fields
   MAILBOX_FIELDS = [
@@ -17,7 +19,8 @@ module MailRoom
     :client_id, # for gmail_xoauth
     :client_secret, # for gmail_xoauth
     :refresh_token, # for gmail_xoauth
-    :debug
+    :debug,
+    :logger_output # path to logger output
   ]
 
   # Holds configuration for each of the email accounts we wish to monitor
@@ -33,11 +36,27 @@ module MailRoom
       :auth_method => 'login',
       :debug => false
     }
+    
+    attr_accessor :logger
 
     # Store the configuration and require the appropriate delivery method
     # @param attributes [Hash] configuration options
     def initialize(attributes={})
       super(*DEFAULTS.merge(attributes).values_at(*members))
+
+      if logger_output
+        @logger = ::Logger.new(logger_output)
+      else
+        @logger = ::Logger.new(STDOUT)
+      end
+      
+      if debug
+        @logger.level = ::Logger::DEBUG
+      else
+        @logger.level = ::Logger::FATAL
+      end
+      
+      @logger.debug "Creating mailbox"
 
       require_relative("./delivery/#{(delivery_method)}")
       require_relative("./authentication/#{(auth_method)}")
